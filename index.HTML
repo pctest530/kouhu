@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口湖鄉綜合資訊平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v9.1.0/ol.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans TC', Arial, sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to right bottom, #89CFF0, #A7D9F0);
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 900px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #1a73e8;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            margin-top: 40px;
+        }
+
+        .accordion-item {
+            margin-bottom: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease-in-out;
+        }
+        .accordion-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .accordion-header {
+            background-color: #5DADE2;
+            color: white;
+            padding: 18px 25px;
+            cursor: pointer;
+            font-size: 1.3em;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .accordion-header:hover {
+            background-color: #3498db;
+            transform: scale(1.01);
+        }
+        .accordion-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transition: left 0.4s ease-in-out;
+        }
+        .accordion-header:hover::before {
+            left: 0;
+        }
+        .accordion-header span {
+            z-index: 1;
+        }
+        .accordion-header .icon {
+            font-size: 1.1em;
+            margin-right: 10px;
+        }
+        .accordion-header .arrow-icon {
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.active .arrow-icon {
+            transform: rotate(180deg);
+        }
+
+        .accordion-content {
+            background-color: #E8F6F3;
+            padding: 0 25px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+        }
+        .accordion-content.show {
+            max-height: 1500px;
+            padding: 20px 25px;
+        }
+
+        ul, ol {
+            padding-left: 25px;
+            margin: 0;
+        }
+        li {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        li:last-child {
+            margin-bottom: 0;
+        }
+
+        .contact-info {
+            list-style: none;
+            padding: 0;
+        }
+        .contact-info li {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 8px 0;
+            border-bottom: 1px dashed #cfcfcf;
+        }
+        .contact-info li:last-child {
+            border-bottom: none;
+        }
+        .contact-info .name {
+            flex-grow: 1;
+            font-weight: 400;
+            color: #444;
+        }
+        .contact-info .number {
+            margin-left: 20px;
+            white-space: nowrap;
+            color: #007bff;
+            font-weight: 700;
+            font-size: 1.05em;
+        }
+        .link-list li a {
+            color: #007bff;
+            text-decoration: none;
+            word-break: break-all;
+            transition: color 0.3s ease;
+        }
+        .link-list li a:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+        .section-details {
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .section-summary {
+            font-weight: bold;
+            padding: 15px;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .section-summary::after {
+            content: '+';
+            font-size: 24px;
+            color: inherit;
+        }
+        .section-details[open] .section-summary::after {
+            content: '-';
+        }
+        .section-content {
+            padding: 15px;
+            border-top: 1px solid #ddd;
+        }
+        .google-map-link {
+            word-break: break-all;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        #map {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .info-box p {
+            margin: 5px 0;
+        }
+        .legend-text-box {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        .legend-item {
+            margin-bottom: 10px;
+        }
+        .legend-color {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .red { background-color: red; }
+        .orange { background-color: orange; }
+        .blue { background-color: blue; }
+        
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            margin-top: 15px;
+            font-style: italic;
+            color: #555;
+            text-align: center;
+        }
+        .marquee-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 15s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            .main-container {
+                margin: 10px auto;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 2em;
+            }
+            .accordion-header {
+                font-size: 1.1em;
+                padding: 15px 20px;
+            }
+            .accordion-content {
+                padding: 15px 20px;
+            }
+            .contact-info .name, .contact-info .number {
+                font-size: 0.95em;
+            }
+            .contact-info li {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .contact-info .number {
+                margin-left: 0;
+                margin-top: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <h1>口湖鄉綜合資訊平台</h1>
+
+    <div class="accordion-item">
+        <div class="accordion-header">
+            <span class="icon"><i class="fas fa-building"></i></span>
+            <span>口湖機關聯繫</span>
+            <span class="arrow-icon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="accordion-content">
+            <ul class="contact-info">
+                <li><span class="name">口湖鄉公所</span><span class="number">05-7892001</span></li>
+                <li><span class="name">北港分局警察口湖分駐所</span><span class="number">05-7892014</span></li>
+                <li><span class="name">第三大隊口湖消防分隊</span><span class="number">05-7892119</span></li>
+                <li><span class="name">雲林區漁會信用部口湖分部</span><span class="number">05-7972220</span></li>
+                <li><span class="name">台灣電力公司口湖服務所</span><span class="number">05-7892018</span></li>
+                <li><span class="name">戶政事務所口湖辦公室</span><span class="number">05-7892794</span></li>
+                <li><span class="name">中華電信 口湖服務中心</span><span class="number">05-7891003</span></li>
+                <li><span class="name">口湖鄉農會</span><span class="number">05-7892701</span></li>
+                <li><span class="name">口湖郵局</span><span class="number">05-7892042</span></li>
+                <li><span class="name">口湖民代表會</span><span class="number">05-7892021</span></li>
+                <li><span class="name">口湖鄉衛生所</span><span class="number">05-7892004</span></li>
+                <li><span class="name">口湖工作站 - 雲林管理處</span><span class="number">05-7892411</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header">
+            <span class="icon"><i class="fas fa-school"></i></span>
+            <span>學校機關</span>
+            <span class="arrow-icon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="accordion-content">
+            <ul class="contact-info">
+                <li><span class="name">崇文國小</span><span class="number">05-7892186</span></li>
+                <li><span class="name">文光國小(湖口分校)</span><span class="number">05-7906930</span></li>
+                <li><span class="name">文光國小(過港分校)</span><span class="number">05-7907189</span></li>
+                <li><span class="name">口湖國小</span><span class="number">05-7892154</span></li>
+                <li><span class="name">金湖國小</span><span class="number">05-7971188</span></li>
+                <li><span class="name">下崙國小</span><span class="number">05-7991184</span></li>
+                <li><span class="name">成龍國小</span><span class="number">05-7971187</span></li>
+                <li><span class="name">台興國小</span><span class="number">05-7971494</span></li>
+                <li><span class="name">頂湖國小</span><span class="number">05-7892185</span></li>
+                <li><span class="name">興南國小</span><span class="number">05-7892190</span></li>
+                <li><span class="name">口湖國中</span><span class="number">05-6341295</span></li>
+                <li><span class="name">宜梧國中</span><span class="number">05-7907254</span></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header">
+            <span class="icon"><i class="fas fa-hard-hat"></i></span>
+            <span>標案工程</span>
+            <span class="arrow-icon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="accordion-content">
+            <ul class="link-list">
+                <li>公共工程雲雲端服務網圖式 公共工程概要：<a href="https://pcic.pcc.gov.tw/pwc-web/service/bidCaa001/query" target="_blank">https://pcic.pcc.gov.tw/pwc-web/service/bidCaa001/query</a></li>
+                <li>台灣採購公報網：<a href="https://www.taiwanbuying.com.tw/ShowOrgYearClose.ASP?OrgID=14406&Y=2025" target="_blank">https://www.taiwanbuying.com.tw/ShowOrgYearClose.ASP?OrgID=14406&Y=2025</a></li>
+                <li>開放標案：<a href="https://pcc.mlwmlw.org/unit/3.76.49.69" target="_blank">https://pcc.mlwmlw.org/unit/3.76.49.69</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header">
+            <span class="icon"><i class="fas fa-cloud"></i></span>
+            <span>雲林縣政府系統</span>
+            <span class="arrow-icon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="accordion-content">
+            <ul class="link-list">
+                <li>雲林縣公路資訊平台：<a href="https://road.yunlin.gov.tw/YunlinRoad/" target="_blank">https://road.yunlin.gov.tw/YunlinRoad/</a></li>
+                <li>雲林韌性防災影像監視平台：<a href="https://yliflood.yunlin.gov.tw/cameralist/#" target="_blank">https://yliflood.yunlin.gov.tw/cameralist/#</a></li>
+                <li>雲林智慧防汛平台：<a href="https://yliflood.yunlin.gov.tw/ifloodmobile/" target="_blank">https://yliflood.yunlin.gov.tw/ifloodmobile/</a></li>
+                <li>管線挖掘資訊便民服務系統：<a href="https://pwd.yunlin.gov.tw/YLPub/" target="_blank">https://pwd.yunlin.gov.tw/YLPub/</a></li>
+                <li>雲林路燈報修系統：<a href="https://lamp.yunlin.gov.tw/slyunlin/Default.aspx" target="_blank">https://lamp.yunlin.gov.tw/slyunlin/Default.aspx</a></li>
+                <li>便民服務系統執照案件查詢：<a href="https://publicnewbuilding.yunlin.gov.tw/YLCGBM/" target="_blank">https://publicnewbuilding.yunlin.gov.tw/YLCGBM/</a></li>
+                <li>漁電共生環社檢核(太陽能)：<a href="https://www.sfea.org.tw/SfeaMap/" target="_blank">https://www.sfea.org.tw/SfeaMap/</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="accordion-item">
+        <div class="accordion-header">
+            <span class="icon"><i class="fas fa-map"></i></span>
+            <span>土地相關查詢</span>
+            <span class="arrow-icon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="accordion-content">
+            <ul class="link-list">
+                <li>內政部營建署的全國土地使用分區資料查詢系統：<a href="https://luz.tcd.gov.tw/tcdgm/Default.aspx" target="_blank">https://luz.tcd.gov.tw/tcdgm/Default.aspx</a></li>
+                <li>交通部公路局智慧化省道即時資訊服務網：<a href="https://168.thb.gov.tw/thb168" target="_blank">https://168.thb.gov.tw/thb168</a></li>
+                <li>內政部-門牌電子地圖查詢系統：<a href="https://addressrs.moi.gov.tw/address/index.cfm?city_id=10009" target="_blank">https://addressrs.moi.gov.tw/address/index.cfm?city_id=10009</a></li>
+                <li>交通資訊基礎路段編碼查詢系統：<a href="https://link.motc.gov.tw/RoadID" target="_blank">https://link.motc.gov.tw/RoadID</a></li>
+                <li>雲林縣公路資訊平台：<a href="https://road.yunlin.gov.tw/YunlinRoad/SNs" target="_blank">https://road.yunlin.gov.tw/YunlinRoad/SNs</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="accordion-item">
+        <div class="accordion-header">
+            <span class="icon"><i class="fas fa-car-alt"></i></span>
+            <span>交通資訊</span>
+            <span class="arrow-icon"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="accordion-content">
+            <ul class="link-list">
+                <li>交通部高速公路局即時路況：<a href="https://1968.freeway.gov.tw/" target="_blank">https://1968.freeway.gov.tw/</a></li>
+                <li>高速公路資訊網即時影像和交通路況：<a href="https://www.1968services.tw" target="_blank">https://www.1968services.tw</a></li>
+                <li>雲林縣即時交通資訊網：<a href="https://yltraffic.yunlin.gov.tw/dashboard/dashboard" target="_blank">https://yltraffic.yunlin.gov.tw/dashboard/dashboard</a></li>
+                <li>公路客運即時動態資訊網：<a href="https://www.taiwanbus.tw/eBUSPage/Default.aspx?lan=C" target="_blank">https://www.taiwanbus.tw/eBUSPage/Default.aspx?lan=C</a></li>
+                <li>雲林縣即時公車動態：<a href="https://ebus.yunlin.gov.tw/driving-map" target="_blank">https://ebus.yunlin.gov.tw/driving-map</a></li>
+                <li>火車時刻表查詢：<a href="https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime" target="_blank">https://tip.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime</a></li>
+                <li>台灣高鐵：<a href="https://www.thsrc.com.tw/ArticleContent/5f4c7bb0-c676-4e39-8d3c-f12fc188ee5f" target="_blank">https://www.thsrc.com.tw/ArticleContent/5f4c7bb0-c676-4e39-8d3c-f12fc188ee5f</a></li>
+            </ul>
+        </div>
+    </div>
+    
+
+    <h2>交通水利資料</h2>
+    <details class="section-details">
+        <summary class="section-summary" style="background-color: #c0c0c0;">路名 -- 85條道路 交通工務局 電話：05-5522320</summary>
+        <div class="section-content">
+            <p>三民路, 下寮, 中南街, 中和路, 中山路, 中正路, 中正路１段, 中正路２段, 中興路１段, 中興路２段, 中華街, 五福街, 仁愛街, 代安街, 保定街, 信義路, 光明路, 公園街, 北興街, 厝子, 口湖路, 台興路, 和平路, 嘉農路, 四維街, 外埔, 山寮, 崇文路２段, 廟前街, 後厝, 復興路, 忠孝街, 慈愛路, 成功路, 成龍, 拔拉, 文仁街, 文元街, 文光路, 文化路, 文安街, 文昌路, 文明路, 文興路, 新湖街, 方圓街, 明仁路, 東安路, 東興路, 林圍, 正義路, 民主路, 民治路, 民生路, 水井路, 水尾, 永安街, 永平街, 永昌街, 永樂街, 永順街, 沙崙, 海豐路, 湖口, 漁港路, 烏麻園街, 瑞興街, 福安路, 福德街, 福興街, 聖安一街, 聖安二街, 聖安路, 興港路, 興農路, 蚵寮路, 蚶寮, 謝厝, 警前街, 過港, 青蚶, 頂湖, 順安街, 養魚路, 鱉潭</p>
+        </div>
+    </details>
+
+    <details class="section-details">
+        <summary class="section-summary" style="background-color: #ff9999;">廟宇 -- 42間 主管機關: 雲林縣政府 電話：05-5522000</summary>
+        <div class="section-content">
+            <p>南安宮	 台子村蚶寮路116之1號</p>
+            <p>鎮安宮	 頂湖村109之2號</p>
+            <p>代安府	 湖東村代安街40之1號</p>
+            <p>開元宮	 後厝村110號</p>
+            <p>水尾順天宮    謝厝村7鄰水尾34號</p>
+            <p>保安宮	 青蚶村56號</p>
+            <p>金湖萬善爺廟  港東村民主路5號</p>
+            <p>興安代天府    崙東村民生路79巷28號</p>
+            <p>順天宮	 蚵寮村崇文路二段160號</p>
+            <p>聖安宮	 口湖村聖安路106號</p>
+            <p>萬善爺廟      下崙村下寮路70之6號</p>
+            <p>奉天宮	 水井村21之2號</p>
+            <p>興仙廟	 蚵寮村蚵寮28號</p>
+            <p>順安宮	 口湖村5鄰文安街38巷24號</p>
+            <p>鎮天宮	 埔北村5鄰沙崙19之1號</p>
+            <p>安龍宮	 成龍村89號</p>
+            <p>福天宮	 台子村蚶寮路22號</p>
+            <p>下崙福安宮    福安路22號</p>
+            <p>龍台宮	 三民路1之1號</p>
+            <p>聖賢公廟      頂湖村107號</p>
+            <p>天台宮	 台興路86號</p>
+            <p>萬善祠	 台子村蚶寮126號</p>
+            <p>北天宮	 過港村96號</p>
+            <p>富安宮	 口湖路159巷23號</p>
+            <p>通天府	 後厝村後厝8號</p>
+            <p>會水宮	 烏麻園街30-1號</p>
+            <p>福德宮	 文安街59之5號</p>
+            <p>福天宮	 蚵寮村四維街45號</p>
+            <p>聖修宮	 台興路280之1號</p>
+            <p>順天宮	 梧南村瑞興街26-3號</p>
+            <p>北安宮	 台子村蚶寮60之6號</p>
+            <p>調天宮	 梧北村8鄰復興路144號</p>
+            <p>順寮宮	 下崙村1鄰下寮25號</p>
+            <p>太子宮	 文昌路27號</p>
+            <p>海天宮	 蚵寮村四維街99號</p>
+            <p>鎮海宮	 台子村蚶寮路124號</p>
+            <p>合天宮	 湖口村91號</p>
+            <p>新興宮	 民主路9號</p>
+            <p>謝厝寮順天宮	 謝厝村謝厝36之1號</p>
+            <p>馨香宮	 埔南村126號</p>
+            <p>下崙福德宮	 下崙村5鄰中興路2段101之1號</p>
+            <p>普明寺	 頂湖村頂湖208號</p>
+        </div>
+    </details>
+
+    <details class="section-details"> 
+        <summary class="section-summary" style="background-color: #99ff99;">橋梁 -- 95座 管理機關: 交通部公路局跟雲林縣政府 電話：05-5522000</summary>
+        <div class="section-content">
+<p>橋梁類別	橋梁名稱      所在縣市鄉 橋梁總長(M) 管理機關</p>
+
+<p>1. 車行橋梁   新港橋	      雲林縣口湖  22	 雲林縣政府</p>
+<p>2. 車行橋梁   椬梧橋	      雲林縣口湖  30.2	 雲林縣政府</p>
+<p>3. 車行橋梁   瑞穗橋	      雲林縣口湖  101.5	 雲林縣政府</p>
+<p>4. 車行橋梁   光復橋-653   雲林縣口湖  12.4	 雲林縣政府</p>
+<p>5. 車行橋梁   口湖N22      雲林縣口湖  15.5	 雲林縣政府</p>
+<p>6. 車行橋梁   口湖N23      雲林縣口湖  13.5	 雲林縣政府</p>
+<p>7. 車行橋梁   台子東橋     雲林縣口湖  13.3	 雲林縣政府</p>
+<p>8. 車行橋梁   興南橋	      雲林縣口湖  6.2	 雲林縣政府</p>
+<p>9. 車行橋梁   外埔橋       雲林縣口湖 6.5	 雲林縣政府</p>
+<p>10.車行橋梁  金湖二號橋    雲林縣口湖 15	 雲林縣政府</p>
+<p>11.車行橋梁  金湖橋	      雲林縣口湖 26.1	 雲林縣政府</p>
+<p>12.車行橋梁  蚶子寮橋      雲林縣口湖 6.8	 雲林縣政府</p>
+<p>13.車行橋梁  口湖N14       雲林縣口湖 14.2	 雲林縣政府</p>
+<p>14.車行橋梁  口湖N20       雲林縣口湖 11	 雲林縣政府</p>
+<p>15.車行橋梁  口湖N21	      雲林縣口湖 6.9	 雲林縣政府</p>
+<p>16.車行橋梁  陵埔橋	      雲林縣口湖 16.8	 雲林縣政府</p>
+<p>17.車行橋梁  口湖N11	      雲林縣口湖 16.7	 雲林縣政府</p>
+<p>18.車行橋梁  道德橋	      雲林縣口湖 16.6	 雲林縣政府</p>
+<p>19.車行橋梁  口湖N17       雲林縣口湖 41.2	 雲林縣政府</p>
+<p>20.車行橋梁 福安橋	      雲林縣口湖 28	 雲林縣政府</p>
+<p>21.車行橋梁 箔東橋	      雲林縣口湖 16.4	 雲林縣政府</p>
+<p>22.車行橋梁 頂湖橋	      雲林縣口湖 20.6	 雲林縣政府</p>
+<p>23.車行橋梁 頂口湖橋	      雲林縣口湖 14.5	 雲林縣政府</p>
+<p>24.車行橋梁 光豐橋	      雲林縣口湖 19.7	 雲林縣政府</p>
+<p>25.車行橋梁 下崙東橋	      雲林縣口湖 15.2	 雲林縣政府</p>
+<p>26.車行橋梁 富榮橋	      雲林縣口湖 15.6	 雲林縣政府</p>
+<p>27.車行橋梁 口湖N26	      雲林縣口湖 13	 雲林縣政府</p>
+<p>28.車行橋梁 埔北橋	      雲林縣口湖 15	 雲林縣政府</p>
+<p>29.車行橋梁 春蘇橋	      雲林縣口湖 18.9	 雲林縣政府</p>
+<p>30.車行橋梁 口湖N27	      雲林縣口湖 8	 雲林縣政府</p>
+<p>31.車行橋梁 口湖N28	      雲林縣口湖 7	 雲林縣政府</p>
+<p>32.車行橋梁 口湖N29	      雲林縣口湖 8.2	 雲林縣政府</p>
+<p>33.車行橋梁 俊雄二號橋     雲林縣口湖 17.1	 雲林縣政府</p>
+<p>34.車行橋梁 箔西橋	      雲林縣口湖 15.6	 雲林縣政府</p>
+<p>35.車行橋梁 口湖N25	      雲林縣口湖 14.3	 雲林縣政府</p>
+<p>36.車行橋梁 內湖橋-653     雲林縣口湖 9.8	 雲林縣政府</p>
+<p>37.車行橋梁 直純橋	      雲林縣口湖 11	 雲林縣政府</p>
+<p>38.車行橋梁 口湖N5	      雲林縣口湖 10.6	 雲林縣政府</p>
+<p>39.車行橋梁 增和橋	      雲林縣口湖 24	 雲林縣政府</p>
+<p>40.車行橋梁 過港橋	      雲林縣口湖 80      雲林縣政府</p>
+<p>41.車行橋梁 口湖N1	      雲林縣口湖 15.7	 雲林縣政府</p>
+<p>42.車行橋梁 良心橋	      雲林縣口湖 21.7	 雲林縣政府</p>
+<p>43.車行橋梁 後厝南橋	      雲林縣口湖 22.2	 雲林縣政府</p>
+<p>44.車行橋梁 水井南橋	      雲林縣口湖 30.1	 雲林縣政府</p>
+<p>45.車行橋梁 口湖N6	      雲林縣口湖 12.4	 雲林縣政府</p>
+<p>46.車行橋梁 口湖N7	      雲林縣口湖 15	 雲林縣政府</p>
+<p>47.車行橋梁 口湖N8	      雲林縣口湖 14.8	 雲林縣政府</p>
+<p>48.車行橋梁 口湖N9  	      雲林縣口湖 12.7	 雲林縣政府</p>
+<p>49.車行橋梁 下寮橋-653     雲林縣口湖 6.5	 雲林縣政府</p>
+<p>50.車行橋梁 沙崙橋	      雲林縣口湖 18	 雲林縣政府</p>
+<p>51.車行橋梁 口湖N13	      雲林縣口湖 7	 雲林縣政府</p>
+<p>52.車行橋梁 林投圍橋	      雲林縣口湖 17.7	 雲林縣政府</p>
+<p>53.車行橋梁 成功橋	      雲林縣口湖 27.1	 雲林縣政府</p>
+<p>54.車行橋梁 宜純二號橋     雲林縣口湖 10.3	 雲林縣政府</p>
+<p>55.車行橋梁 沙林橋	      雲林縣口湖 18.4	 雲林縣政府</p>
+<p>56.車行橋梁 沙湖橋	      雲林縣口湖 18.4	 雲林縣政府</p>
+<p>57.車行橋梁 湖口橋(-1)     雲林縣口湖 36.5	 雲林縣政府</p>
+<p>58.車行橋梁 中港橋	      雲林縣口湖 34.6	 雲林縣政府</p>
+<p>59.車行橋梁 湖口橋	      雲林縣口湖 36.5	 雲林縣政府</p>
+<p>60.車行橋梁 復興橋-653      雲林縣口湖 18.6	 雲林縣政府</p>
+<p>61.車行橋梁 行喜橋(原口湖N4)雲林縣口湖 8.4	 雲林縣政府</p>
+<p>62.車行橋梁 椬梧西橋	      雲林縣口湖 7.76	 雲林縣政府</p>
+<p>63.車行橋梁 德鴻橋	      雲林縣口湖 17.5	 雲林縣政府</p>
+<p>64.車行橋梁 下崙三號橋     雲林縣口湖 39	 雲林縣政府</p>
+<p>65.車行橋梁 口湖N24	      雲林縣口湖 14.8	 雲林縣政府</p>
+<p>66.車行橋梁 下崙一號橋      雲林縣口湖 6.5	 交通部公路局</p>
+<p>67.車行橋梁 高架橋244K+586M 雲林縣口湖 13	 交通部公路局</p>
+<p>68.車行橋梁 成龍南三號橋   雲林縣口湖 16	 交通部公路局</p>
+<p>69.車行橋梁 成龍北三號橋   雲林縣口湖 16	 交通部公路局</p>
+<p>70.車行橋梁 成龍南一號橋   雲林縣口湖 16	 交通部公路局</p>
+<p>71.車行橋梁 成龍北一號橋   雲林縣口湖 16	 交通部公路局</p>
+<p>72.車行橋梁 下崙橋	      雲林縣口湖 18	 交通部公路局</p>
+<p>73.車行橋梁 下崙二號橋     雲林縣口湖 23.9	 交通部公路局</p>
+<p>74.車行橋梁 湖口橋	      雲林縣口湖 24	 交通部公路局</p>
+<p>75.車行橋梁 奉天橋	      雲林縣口湖 25	 交通部公路局</p>
+<p>76.車行橋梁 青蚶橋(臺17線北上) 雲林縣口湖 28	 交通部公路局</p>
+<p>77.車行橋梁 青蚶橋(臺17線南下) 雲林縣口湖 32.5 交通部公路局</p>
+<p>78.車行橋梁 青蚶橋(臺61線)     雲林縣口湖 39	 交通部公路局</p>
+<p>79.車行橋梁 水井橋	      雲林縣口湖 40	 交通部公路局</p>
+<p>80.車行橋梁 金湖一號橋     雲林縣口湖 72	 交通部公路局</p>
+<p>81.車行橋梁 中港橋	      雲林縣口湖 75	 交通部公路局</p>
+<p>82.車行橋梁 成龍南二號橋   雲林縣口湖 100	 交通部公路局</p>
+<p>83.車行橋梁 成龍北二號橋   雲林縣口湖 100	 交通部公路局</p>
+<p>84.車行橋梁 濱海橋	      雲林縣口湖 105	 交通部公路局</p>
+<p>85.車行橋梁 山寮橋(臺17、61線)  雲林縣口湖 120    交通部公路局</p>
+<p>86.車行橋梁 梧北橋	      雲林縣口湖 180	 交通部公路局</p>
+<p>87.車行橋梁 台61線243A口湖順樁下匝道橋R1	 雲林縣口湖	200  交通部公路局</p>	
+<p>88.車行橋梁 台61線243A口湖逆樁上匝道橋L2	 雲林縣口湖	210  交通部公路局</p>
+<p>89.車行橋梁 高架橋242K+333M 雲林縣口湖 420     交通部公路局</p>
+<p>90.車行橋梁 梧南橋	      雲林縣口湖 440     交通部公路局</p>	
+<p>91.車行橋梁 金湖高架橋      雲林縣口湖 480     交通部公路局</p>	
+<p>92.車行橋梁 高架橋241K+152M 雲林縣口湖 625     交通部公路局</p>	
+<p>93.車行橋梁 成龍大橋	      雲林縣口湖 920     交通部公路局</p>	
+<p>94.車行橋梁 雲嘉大橋(臺17、61線) 雲林縣口湖 963.1 交通部公路局</p> 	 
+<p>95.車行橋梁 高架橋243K+138M 雲林縣口湖 104   交通部公路局</p>  
+        </div>
+    </details>
+
+    <details class="section-details">
+        <summary class="section-summary" style="background-color: #9999ff;">道路 -- 管理機關: 交通部公路局 電話：02-2307-0123(代表號)</summary>
+        <div class="section-content">
+            <p>1 縣道 1條 縣164</p>
+            <p>2 省道 2條 台17 台61</p>
+            <p>3 縣道 20條</p>
+            <p>雲129, 雲131, 雲131-1, 雲131-2, 雲135, 雲135, 雲136, 雲136-2, 雲136-3, 雲137, 雲138, 雲140, 雲140-1, 雲141, 雲142, 雲143, 雲144, 雲147, 雲149, 雲150, 縣145</p>
+        </div>
+    </details>
+
+    <details class="section-details">
+        <summary class="section-summary" style="background-color: #ffcc99;">護岸排水 -- 權責單位：雲林縣政府水利處 電話：05-5522230</summary>
+        <div class="section-content">
+            <p>小排</p>
+            <p>大排</p>
+            <p>下崙大排一, 下崙大排二, 箔子寮大排, 羊稠厝大排, 烏麻園中排, 四湖大排, 飛沙大排, 牛挑灣溪, 牛尿港大排, 尖山大排, 蔦松大排, 塭底中排一, 塭底中排二, 鵝尾墩排水, 宜梧大排</p>
+        </div>
+    </details>
+
+    <details class="section-details">
+        <summary class="section-summary" style="background-color: #ffff99;">分線 -- 6</summary>
+        <div class="section-content">
+            <p>青蚶分線, 過港分線, 水林分線, 下崙分線, 牛尿港分線, 謝厝寮分線</p>
+        </div>
+    </details>
+
+    <details class="section-details">
+        <summary class="section-summary" style="background-color: #ff99cc;">中央管水位站 -- 1座 權責單位：第五河川分署 電話：(05)230-4406 </summary>
+        <div class="section-content">
+            <p>雲林縣口湖鄉雲嘉大橋</p>
+            <p><a href="https://www.google.com/maps/search/?api=1&query=雲林縣口湖鄉雲嘉大橋" target="_blank">Google Maps</a></p>
+        </div>
+    </details>
+
+    <details class="section-details">
+        <summary class="section-summary" style="background-color: #99ffcc;">抽水站 -- 11站 權責單位：雲林縣政府水利處 電話：05-5522230</summary>
+        <div class="section-content">
+            <p>梧北簡易抽水站: <a href="https://www.google.com/maps/search/?api=1&query=梧北簡易抽水站" target="_blank">Google Maps</a></p>
+            <p>厝仔抽水站(抽): <a href="https://www.google.com/maps/search/?api=1&query=厝仔抽水站" target="_blank">Google Maps</a></p>
+            <p>水井抽水站(抽): <a href="https://www.google.com/maps/search/?api=1&query=水井抽水站" target="_blank">Google Maps</a></p>
+            <p>下箔子寮抽水站(抽): <a href="https://www.google.com/maps/search/?api=1&query=下箔子寮抽水站" target="_blank">Google Maps</a></p>
+            <p>宜梧農場南抽水站(抽): <a href="https://www.google.com/maps/search/?api=1&query=宜梧農場南抽水站" target="_blank">Google Maps</a></p>
+            <p>四湖大排抽水站: <a href="https://www.google.com/maps/search/?api=1&query=四湖大排抽水站" target="_blank">Google Maps</a></p>
+            <p>金湖抽水南站: <a href="https://www.google.com/maps/search/?api=1&query=金湖抽水南站" target="_blank">Google Maps</a></p>
+            <p>順興支線抽水站(抽): <a href="https://www.google.com/maps/search/?api=1&query=順興支線抽水站" target="_blank">Google Maps</a></p>
+            <p>金湖北抽水站: <a href="https://www.google.com/maps/search/?api=1&query=金湖北抽水站" target="_blank">Google Maps</a></p>
+            <p>頂口湖簡易抽水站: <a href="https://www.google.com/maps/search/?api=1&query=頂口湖簡易抽水站" target="_blank">Google Maps</a></p>
+            <p>謝厝簡易抽水站(抽): <a href="https://www.google.com/maps/search/?api=1&query=謝厝簡易抽水站" target="_blank">Google Maps</a></p>
+        </div>
+    </details>
+
+    <details class="section-details">
+        <summary class="section-summary" style="background-color: #b3c2ff;">縣管水位站 -- 45站 權責單位：雲林縣政府 電話：05-5522000</summary>
+        <div class="section-content">
+            <p>宜梧北側滯洪池抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=宜梧北側滯洪池抽水站" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>下崙大排一: <a href="https://www.google.com/maps/search/?api=1&query=下崙大排一" target="_blank">Google Maps</a> 所屬水系：下崙大排</p>
+            <p>過港一抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=過港一抽水站" target="_blank">Google Maps</a> 所屬水系：過港排水</p>
+            <p>塭底抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=塭底抽水站" target="_blank">Google Maps</a> 所屬水系：蔦松大排排水</p>
+            <p>羊稠厝排水二: <a href="https://www.google.com/maps/search/?api=1&query=羊稠厝排水二" target="_blank">Google Maps</a> 所屬水系：羊稠厝大排</p>
+            <p>下宜梧支線抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=下宜梧支線抽水站" target="_blank">Google Maps</a> 所屬水系：尖山大排排水</p>
+            <p>新港大排二防潮閘門(堤外): <a href="https://www.google.com/maps/search/?api=1&query=新港大排二防潮閘門" target="_blank">Google Maps</a> 所屬水系：新港大排二</p>
+            <p>烏麻園中排A2抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=烏麻園中排A2抽水站" target="_blank">Google Maps</a> 所屬水系：牛挑灣溪</p>
+            <p>宜梧北側滯洪池抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=宜梧北側滯洪池抽水站" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>宜梧南側滯洪池抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=宜梧南側滯洪池抽水站" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>羊稠厝排水三: <a href="https://www.google.com/maps/search/?api=1&query=羊稠厝排水三" target="_blank">Google Maps</a> 所屬水系：羊稠厝大排</p>
+            <p>新港大排一蚶仔寮大排一防潮閘門(內): <a href="https://www.google.com/maps/search/?api=1&query=新港大排一蚶仔寮大排一防潮閘門" target="_blank">Google Maps</a> 所屬水系：新港大排一</p>
+            <p>下崙大排一、二（合流處）(內): <a href="https://www.google.com/maps/search/?api=1&query=下崙大排一、二合流處" target="_blank">Google Maps</a> 所屬水系：下崙大排</p>
+            <p>台子村抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=台子村抽水站" target="_blank">Google Maps</a> 所屬水系：</p>
+            <p>蔦松排水一: <a href="https://www.google.com/maps/search/?api=1&query=蔦松排水一" target="_blank">Google Maps</a> 所屬水系：蔦松大排</p>
+            <p>頂宜梧分線出口抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=頂宜梧分線出口抽水站" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>下宜梧支線抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=下宜梧支線抽水站" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>順興支線抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=順興支線抽水站" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>宜梧南側滯洪池抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=宜梧南側滯洪池抽水站" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>牛尿港大排、蚶子寮大排防潮閘門(堤外): <a href="https://www.google.com/maps/search/?api=1&query=牛尿港大排、蚶子寮大排防潮閘門" target="_blank">Google Maps</a> 所屬水系：牛尿港大排</p>
+            <p>成龍抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=成龍抽水站" target="_blank">Google Maps</a> 所屬水系：牛挑灣溪</p>
+            <p>蔦松排水二: <a href="https://www.google.com/maps/search/?api=1&query=蔦松排水二" target="_blank">Google Maps</a> 所屬水系：蔦松大排</p>
+            <p>牛尿港大排蚶仔寮大排防潮閘門(內): <a href="https://www.google.com/maps/search/?api=1&query=牛尿港大排蚶仔寮大排防潮閘門" target="_blank">Google Maps</a> 所屬水系：新港大排一</p>
+            <p>順興支線抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=順興支線抽水站" target="_blank">Google Maps</a> 所屬水系：順興支線水</p>
+            <p>過港一抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=過港一抽水站" target="_blank">Google Maps</a> 所屬水系：過港排水</p>
+            <p>蚵寮抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=蚵寮抽水站" target="_blank">Google Maps</a> 所屬水系：牛挑灣溪</p>
+            <p>尖山排水二: <a href="https://www.google.com/maps/search/?api=1&query=尖山排水二" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>烏麻園小排抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=烏麻園小排抽水站" target="_blank">Google Maps</a> 所屬水系：牛挑灣溪</p>
+            <p>頂宜梧分線出口抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=頂宜梧分線出口抽水站" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>蚵寮抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=蚵寮抽水站" target="_blank">Google Maps</a> 所屬水系：牛挑灣溪</p>
+            <p>烏麻園中排A2抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=烏麻園中排A2抽水站" target="_blank">Google Maps</a> 所屬水系：牛挑灣溪</p>
+            <p>羊稠厝大排防潮閘門(堤外): <a href="https://www.google.com/maps/search/?api=1&query=羊稠厝大排防潮閘門" target="_blank">Google Maps</a> 所屬水系：羊稠厝大排</p>
+            <p>羊稠厝排水一: <a href="https://www.google.com/maps/search/?api=1&query=羊稠厝排水一" target="_blank">Google Maps</a> 所屬水系：羊稠厝大排</p>
+            <p>羊稠厝大排防潮閘門(內): <a href="https://www.google.com/maps/search/?api=1&query=羊稠厝大排防潮閘門" target="_blank">Google Maps</a> 所屬水系：羊稠厝大排</p>
+            <p>外埔支線抽水站(外): <a href="https://www.google.com/maps/search/?api=1&query=外埔支線抽水站" target="_blank">Google Maps</a> 所屬水系：外埔大排</p>
+            <p>飛砂大排一: <a href="https://www.google.com/maps/search/?api=1&query=飛砂大排一" target="_blank">Google Maps</a> 所屬水系: 飛砂大排</p>
+            <p>尖山排水一: <a href="https://www.google.com/maps/search/?api=1&query=尖山排水一" target="_blank">Google Maps</a> 所屬水系：尖山大排</p>
+            <p>外埔支線抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=外埔支線抽水站" target="_blank">Google Maps</a> 所屬水系：外埔大排</p>
+            <p>新港大排一蚶子寮大排一防潮閘門(堤外): <a href="https://www.google.com/maps/search/?api=1&query=新港大排一蚶子寮大排一防潮閘門" target="_blank">Google Maps</a> 所屬水系：新港大排一</p>
+            <p>牛挑灣溪排水二(1.78m): <a href="https://www.google.com/maps/search/?api=1&query=牛挑灣溪排水二" target="_blank">Google Maps</a> 所屬水系：牛挑灣溪</p>
+            <p>牛挑灣溪排水一(1.69m): <a href="https://www.google.com/maps/search/?api=1&query=牛挑灣溪排水一" target="_blank">Google Maps</a> 所屬水系：牛挑灣溪</p>
+            <p>新港大排二防潮閘門(內): <a href="https://www.google.com/maps/search/?api=1&query=新港大排二防潮閘門" target="_blank">Google Maps</a> 所屬水系：新港大排二</p>
+            <p>成龍抽水站(內): <a href="https://www.google.com/maps/search/?api=1&query=成龍抽水站" target="_blank">Google Maps</a> 所屬水系：牛挑灣溪</p>
+        </div>
+    </details>
+
+    <details class="section-details">
+        <summary class="section-summary" style="background-color: #ffb3b3;">水閘門站 -- 273</summary>
+        <div class="section-content">
+            <p>口湖鄉 頂口湖簡易抽水站附屬水門 外埔大排</p>
+            <p>口湖鄉 右岸7號水門 尖山大排</p>
+            <p>口湖鄉 左岸35號水門 牛挑灣溪</p>
+            <p>口湖鄉 支線4號水門 蔦松大排</p>
+            <p>口湖鄉 左岸7號水門 飛沙大排</p>
+            <p>口湖鄉 過港1號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 右岸3號水門 飛沙大排</p>
+            <p>口湖鄉 宜梧農場南抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 湖口村落抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 左岸5號水門 蚶仔寮大排</p>
+            <p>口湖鄉 右岸13號水門 尖山大排</p>
+            <p>口湖鄉 後厝抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 左岸17號水門 蔦松大排</p>
+            <p>口湖鄉 過港7號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 右岸27號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸6號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸37號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸15號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸24號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸41號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸28號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸8號水門 尖山大排</p>
+            <p>口湖鄉 右岸30號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸5號水門 羊稠厝大排</p>
+            <p>口湖鄉 東水井簡易1抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 左岸3號水門 蚶仔寮大排</p>
+            <p>口湖鄉 梧南抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 水井小排簡易1抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 右岸6號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸3號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸4號水門 飛沙大排</p>
+            <p>口湖鄉 左岸8號水門 羊稠厝大排</p>
+            <p>口湖鄉 口湖簡易抽水站附屬水門 新港大排二</p>
+            <p>口湖鄉 烏麻園中排A2抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 支線5號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸42號水門 牛挑灣溪</p>
+            <p>口湖鄉 支流小排1號水門 蚶仔寮大排</p>
+            <p>口湖鄉 水井抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 右岸43號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸4號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸16號水門 牛挑灣溪</p>
+            <p>口湖鄉 支流小排3號水門 蚶仔寮大排</p>
+            <p>口湖鄉 梧北抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 右岸25號水門 牛挑灣溪</p>
+            <p>口湖鄉 支流小排2號水門 蚶仔寮大排</p>
+            <p>口湖鄉 左岸1號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸23號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸24號水門 四湖大排</p>
+            <p>口湖鄉 後厝1號水門 尖山大排</p>
+            <p>口湖鄉 過港6號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 左岸20號水門 蔦松大排</p>
+            <p>口湖鄉 右岸14號水門 尖山大排</p>
+            <p>口湖鄉 右岸6號水門 飛沙大排</p>
+            <p>口湖鄉 右岸29號水門 牛挑灣溪</p>
+            <p>口湖鄉 支線小排5水門 蚶仔寮大排</p>
+            <p>口湖鄉 右岸12號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸2號水門 下崙大排一</p>
+            <p>口湖鄉 右岸39號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸7號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸10號水門 蚶仔寮大排</p>
+            <p>口湖鄉 支線2號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸6號水門 尖山大排</p>
+            <p>口湖鄉 後厝小排抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 金湖北抽水站附屬水門 新港大排一</p>
+            <p>口湖鄉 左岸2號水門 新港二大排</p>
+            <p>口湖鄉 左岸9號水門 蚶仔寮大排</p>
+            <p>口湖鄉 過港一抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 右岸28號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸8號水門 尖山大排</p>
+            <p>口湖鄉 左岸26號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸40號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸18號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸13號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸17號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸10號水門 飛沙大排</p>
+            <p>口湖鄉 左岸18號水門 蔦松大排</p>
+            <p>口湖鄉 右岸5號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸11號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸9號水門 飛沙大排</p>
+            <p>口湖鄉 宜梧南側滯洪池抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 左岸11號水門 牛挑灣溪</p>
+            <p>口湖鄉 蚵寮抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 右岸8號水門 羊稠厝大排</p>
+            <p>口湖鄉 北岸11號水門 舊虎尾溪</p>
+            <p>口湖鄉 東水井簡易2抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 支流小排8(1號)水門 蚶仔寮大排</p>
+            <p>口湖鄉 右岸18號水門 四湖大排</p>
+            <p>口湖鄉 右岸21號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸24號水門 牛挑灣溪</p>
+            <p>口湖鄉 外埔支線抽水站附屬水門 外埔大排</p>
+            <p>口湖鄉 左岸1號水門 新港二大排</p>
+            <p>口湖鄉 左岸3號水門 下崙大排一</p>
+            <p>口湖鄉 右岸9號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸6號水門 飛沙大排</p>
+            <p>口湖鄉 右岸14號水門 四湖大排</p>
+            <p>口湖鄉 左岸5號水門 飛沙大排</p>
+            <p>口湖鄉 下宜梧中排四抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 右岸3號水門 下崙大排一</p>
+            <p>口湖鄉 蔦松大排簡易2抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 右岸7號水門 下崙大排一</p>
+            <p>口湖鄉 支線1號水門 蔦松大排</p>
+            <p>口湖鄉 支線小排8水門 蚶仔寮大排</p>
+            <p>口湖鄉 順興支線抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 右岸46號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸9號水門 下崙大排一</p>
+            <p>口湖鄉 左岸9號水門 尖山大排</p>
+            <p>口湖鄉 左岸20號水門 牛挑灣溪</p>
+            <p>口湖鄉 宜梧北側滯洪池抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 過港10號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 牛尿小排分線水門 蚶仔寮大排</p>
+            <p>口湖鄉 支線7號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸1號水門 新港一大排</p>
+            <p>口湖鄉 左岸3號水門 飛沙大排</p>
+            <p>口湖鄉 左岸8號水門 飛沙大排</p>
+            <p>口湖鄉 右岸2號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸10號水門 羊稠厝大排</p>
+            <p>口湖鄉 支線3號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸33號水門 牛挑灣溪</p>
+            <p>口湖鄉 成龍簡易抽水站附屬水門 牛尿港大排</p>
+            <p>口湖鄉 左岸16號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸13號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸16號水門 四湖大排</p>
+            <p>口湖鄉 左岸22號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸11號水門 飛沙大排</p>
+            <p>口湖鄉 左岸14號水門 牛挑灣溪</p>
+            <p>口湖鄉 下崙抽水站附屬水門 下崙大排</p>
+            <p>口湖鄉 蔦松大排簡易1抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 3號水門 下崙大排二</p>
+            <p>口湖鄉 左岸29號水門 牛挑灣溪</p>
+            <p>口湖鄉 支線2號水門 蔦松大排</p>
+            <p>口湖鄉 右岸5號水門 飛沙大排</p>
+            <p>口湖鄉 右岸3號水門 新港一大排</p>
+            <p>口湖鄉 右岸15號水門 牛挑灣溪</p>
+            <p>口湖鄉 成龍抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 右岸7號水門 飛沙大排</p>
+            <p>口湖鄉 左岸4號水門 羊稠厝大排</p>
+            <p>口湖鄉 東水井抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 左岸39水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸2號水門 新港一大排</p>
+            <p>口湖鄉 右岸11號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸12號水門 羊稠厝大排</p>
+            <p>口湖鄉 北岸1號水門 馬公厝大排</p>
+            <p>口湖鄉 西水井抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 支線8號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸5號水門 新港二大排</p>
+            <p>口湖鄉 支流東青蚶7小排左岸3號水門 新港二大排</p>
+            <p>口湖鄉 右岸35號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸32號水門 牛挑灣溪</p>
+            <p>口湖鄉 支流東青蚶7小排右岸2號水門 新港二大排</p>
+            <p>口湖鄉 右岸34號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸9號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸12號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸6號水門 新港二大排</p>
+            <p>口湖鄉 左岸8號水門 下崙大排一</p>
+            <p>口湖鄉 左岸10號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸19號水門 蔦松大排</p>
+            <p>口湖鄉 過港4號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 左岸21號水門 四湖大排</p>
+            <p>口湖鄉 右岸14號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸12號水門 下崙大排一</p>
+            <p>口湖鄉 右岸22號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸18號水門 四湖大排</p>
+            <p>口湖鄉 過港簡易抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 右岸1號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸19號水門 四湖大排</p>
+            <p>口湖鄉 梧北簡易抽水站附屬水門 宜梧大排</p>
+            <p>口湖鄉 左岸8號水門 蚶仔寮大排</p>
+            <p>口湖鄉 左岸2號水門 蚶仔寮大排</p>
+            <p>口湖鄉 謝厝簡易抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 支線1號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸13號水門 四湖大排</p>
+            <p>口湖鄉 左岸6號水門 下崙大排一</p>
+            <p>口湖鄉 水井小排簡易2抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 右岸1號水門 新港二大排</p>
+            <p>口湖鄉 左岸8號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸6號水門 下崙大排一</p>
+            <p>口湖鄉 右岸2號水門 新港一大排</p>
+            <p>口湖鄉 左岸5號水門 下崙大排一</p>
+            <p>口湖鄉 左岸21號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸30號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸1號水門 蚶仔寮大排</p>
+            <p>口湖鄉 左岸10號水門 下崙大排一</p>
+            <p>口湖鄉 左岸25號水門 牛挑灣溪</p>
+            <p>口湖鄉 蚶仔寮抽水站附屬水門 蚶仔寮大排</p>
+            <p>口湖鄉 左岸7號水門 下崙大排一</p>
+            <p>口湖鄉 右岸3號水門 新港二大排</p>
+            <p>口湖鄉 左岸12號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸4號水門 新港二大排</p>
+            <p>口湖鄉 左岸1號水門 蚶仔寮大排</p>
+            <p>口湖鄉 右岸9號水門 新港二大排</p>
+            <p>口湖鄉 左岸4號水門 蚶仔寮大排</p>
+            <p>口湖鄉 左岸31號水門 牛挑灣溪</p>
+            <p>口湖鄉 尖右七水門抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 2號水門 下崙大排二</p>
+            <p>口湖鄉 過港3號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 右岸23號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸15號水門 四湖大排</p>
+            <p>口湖鄉 塭底抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 台子村抽水站附屬水門 台子村排水</p>
+            <p>口湖鄉 右岸10號水門 尖山大排</p>
+            <p>口湖鄉 過港9號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 右岸2號水門 新港二大排</p>
+            <p>口湖鄉 左岸1號水門 新港一大排</p>
+            <p>口湖鄉 左岸5號水門 尖山大排</p>
+            <p>口湖鄉 左岸19號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸16號水門 四湖大排</p>
+            <p>口湖鄉 支流東青蚶7小排1號水門 新港二大排</p>
+            <p>口湖鄉 左岸36號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸38號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸17號水門 四湖大排</p>
+            <p>口湖鄉 左岸13號水門 羊稠厝大排</p>
+            <p>口湖鄉 蔦松大排簡易3抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 右岸33號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸26號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸4號水門 飛沙大排</p>
+            <p>口湖鄉 左岸6號水門 蚶仔寮大排</p>
+            <p>口湖鄉 1號水門 下崙大排二</p>
+            <p>口湖鄉 左岸3號水門 新港一大排</p>
+            <p>口湖鄉 謝厝抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 右岸7號水門 新港二大排</p>
+            <p>口湖鄉 左岸2號水門 飛沙大排</p>
+            <p>口湖鄉 左岸11號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸8-1號水門 下崙大排一</p>
+            <p>口湖鄉 過港二抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 左岸9號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸16號水門 蔦松大排</p>
+            <p>口湖鄉 左岸19號水門 四湖大排</p>
+            <p>口湖鄉 右岸8號水門 新港二大排</p>
+            <p>口湖鄉 左岸22號水門 四湖大排</p>
+            <p>口湖鄉 右岸32號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸37號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸36號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸17號水門 羊稠厝大排</p>
+            <p>口湖鄉 東水井簡易4抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 過港2號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 厝仔抽水站附屬水門 新港大排二</p>
+            <p>口湖鄉 支線6號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸11號水門 尖山大排</p>
+            <p>口湖鄉 四湖大排抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 過港8號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 過港5號水門 牛挑灣大排支流</p>
+            <p>口湖鄉 左岸27號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸15號水門 牛挑灣溪</p>
+            <p>口湖鄉 支線5號水門 蔦松大排</p>
+            <p>口湖鄉 左岸20號水門 四湖大排</p>
+            <p>口湖鄉 左岸18號水門 牛挑灣溪</p>
+            <p>口湖鄉 東水井簡易5抽水站附屬水門 蔦松大排</p>
+            <p>口湖鄉 支線4號水門 牛挑灣溪</p>
+            <p>口湖鄉 右岸13號水門 羊稠厝大排</p>
+            <p>口湖鄉 右岸9號水門 尖山大排</p>
+            <p>口湖鄉 右岸15號水門 羊稠厝大排</p>
+            <p>口湖鄉 金湖南抽水站附屬水門 新港大排一</p>
+            <p>口湖鄉 下宜梧支線抽水站附屬水門 尖山大排</p>
+            <p>口湖鄉 支流小排3-1號水門 蚶仔寮大排</p>
+            <p>口湖鄉 左岸7號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸23號水門 四湖大排</p>
+            <p>口湖鄉 右岸12號水門 尖山大排</p>
+            <p>口湖鄉 左岸2號水門 羊稠厝大排</p>
+            <p>口湖鄉 左岸17號水門 四湖大排</p>
+            <p>口湖鄉 左岸7號水門 蚶仔寮大排</p>
+            <p>口湖鄉 右岸14號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸14號水門 羊稠厝大排</p>
+            <p>口湖鄉 頂宜梧抽水站附屬水門 牛桃灣溪</p>
+            <p>口湖鄉 右岸38號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸34號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸2號水門 下崙大排一</p>
+            <p>口湖鄉 右岸44號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸7號水門 尖山大排</p>
+            <p>口湖鄉 右岸20號水門 牛挑灣溪</p>
+            <p>口湖鄉 支線3號水門 蔦松大排</p>
+            <p>口湖鄉 左岸11號水門 下崙大排一</p>
+            <p>口湖鄉 右岸17號水門 牛挑灣溪</p>
+            <p>口湖鄉 左岸3號水門 羊稠厝大排</p>
+        </div>
+    </details>
+
+    <h2>農田水利灌排渠道系統圖</h2>
+    <div class="info-box">
+        <h3>地圖圖資說明</h3>
+        <p><strong>提供單位:</strong> 農田水利署及政府資料開放平台</p>
+        <hr>
+        <h4>圖層符號說明</h4>
+        <div class="legend-item"><span class="legend-color red"></span>紅色線條，灌溉專用渠道</div>
+        <div class="legend-item"><span class="legend-color orange"></span>橘色線條，下游具引灌需求</div>
+        <div class="legend-item"><span class="legend-color blue"></span>藍色線條，下游不具引灌需求</div>
+    </div>
+
+    <div class="marquee-container">
+        <div class="marquee-text">系統正在透過 WMS 介接讀取資料，處理時間可能較長，請您耐心等候。</div>
+    </div>
+
+    <h3>互動式地圖</h3>
+    <div id="map"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/ol@v9.1.0/dist/ol.js"></script>
+<script>
+    // PAGE 2 Accordion Script
+    document.addEventListener('DOMContentLoaded', () => {
+        const headers = document.querySelectorAll('.accordion-header');
+
+        headers.forEach(header => {
+            header.addEventListener('click', () => {
+                const item = header.parentElement;
+                const content = item.querySelector('.accordion-content');
+                const arrowIcon = header.querySelector('.arrow-icon');
+                
+                header.classList.toggle('active');
+                arrowIcon.classList.toggle('active');
+
+                if (content.classList.contains('show')) {
+                    content.classList.remove('show');
+                } else {
+                    content.classList.add('show');
+                }
+            });
+        });
+    });
+
+    // PAGE 3 Map Script
+    const map = new ol.Map({
+        target: 'map',
+        layers: [
+            new ol.layer.Tile({
+                source: new ol.source.OSM()
+            }),
+            new ol.layer.Image({
+                source: new ol.source.ImageWMS({
+                    url: 'https://www.iacloud.ia.gov.tw/servergate/sgsgate.ashx/WMS/canal_public?',
+                    params: { 'LAYERS': 'canal_public' }
+                })
+            })
+        ],
+        view: new ol.View({
+            center: ol.proj.fromLonLat([120.14713, 23.60677]), // 口湖鄉中心點
+            zoom: 12
+        })
+    });
+</script>
+
+</body>
+</html>
